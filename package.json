@@ -9,13 +9,19 @@
     "build": "npm run build:server && npm run build:client",
     "build:server": "cd server && npm run build",
     "build:client": "cd client && npm run build",
-    "db:generate": "cd server && npx prisma generate",
-    "db:push": "cd server && npx prisma db push",
-    "db:studio": "cd server && npx prisma studio",
     "start": "cd server && npm start",
+    "db:generate": "npx prisma generate --schema=server/prisma/schema.prisma",
+    "db:push": "npx prisma db push --schema=server/prisma/schema.prisma",
+    "db:seed": "cd server && npm run db:seed",
     "postinstall": "npm run db:generate"
   },
   "devDependencies": {
-    "concurrently": "^8.2.2"
-  }
+    "concurrently": "^8.2.2",
+    "prisma": "5.22.0",
+    "@prisma/client": "5.22.0"
+  },
+  "workspaces": [
+    "client",
+    "server"
+  ]
 }
