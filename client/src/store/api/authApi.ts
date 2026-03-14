@@ -5,11 +5,12 @@ import {
   type FetchArgs,
   type FetchBaseQueryError,
 } from '@reduxjs/toolkit/query/react';
+import { API_BASE_URL } from '../../config';
 import type { User } from '../slices/authSlice';
 import { logout, setAccessToken } from '../slices/authSlice';
 
 const baseQuery = fetchBaseQuery({
-  baseUrl: '/api',
+  baseUrl: API_BASE_URL,
   credentials: 'include',
   prepareHeaders: (headers, { getState }) => {
     const token = (getState() as { auth: { accessToken: string | null } }).auth.accessToken;

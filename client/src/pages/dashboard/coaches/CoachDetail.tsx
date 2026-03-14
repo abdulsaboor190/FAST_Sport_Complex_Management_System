@@ -1,3 +1,4 @@
+import { resolveImageUrl } from '@/config';
 import { useState } from 'react';
 import { useParams, Link, useLocation, useNavigate } from 'react-router-dom';
 import { format } from 'date-fns';
@@ -99,7 +100,7 @@ export function CoachDetail() {
             <CardContent className="pt-6">
               <div className="flex flex-col items-center text-center">
                 <Avatar className="h-24 w-24">
-                  <AvatarImage src={coach.user.avatarUrl ?? undefined} alt={coach.user.name} />
+                  <AvatarImage src={resolveImageUrl(coach.user.avatarUrl ?? undefined)} alt={coach.user.name} />
                   <AvatarFallback className="bg-fast-primary/20 text-2xl text-fast-primary">
                     {coach.user.name.slice(0, 2).toUpperCase()}
                   </AvatarFallback>

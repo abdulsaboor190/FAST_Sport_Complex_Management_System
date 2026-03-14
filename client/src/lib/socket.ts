@@ -1,8 +1,9 @@
 import { io } from 'socket.io-client';
+import { SOCKET_URL } from '../config';
 
 const getSocketUrl = () => {
   if (typeof window === 'undefined') return '';
-  return window.location.origin;
+  return SOCKET_URL;
 };
 
 let socket: ReturnType<typeof io> | null = null;

@@ -1,3 +1,4 @@
+import { resolveImageUrl } from '@/config';
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
@@ -40,7 +41,7 @@ function EventCard({ event }: { event: Event }) {
           <div className="flex flex-col md:flex-row">
             <div className="relative h-64 w-full overflow-hidden md:h-auto md:w-96 shrink-0 border-r border-white/5">
                {event.bannerUrl ? (
-                 <img src={event.bannerUrl} alt="" className="h-full w-full object-cover transition-transform duration-1000 group-hover:scale-110" />
+                 <img src={resolveImageUrl(event.bannerUrl)} alt="" className="h-full w-full object-cover transition-transform duration-1000 group-hover:scale-110" />
                ) : (
                  <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-fast-primary/20 via-[#120a1e] to-fast-accent/20">
                     <div className="absolute inset-0 opacity-10" style={{ backgroundImage: 'radial-gradient(circle at 2px 2px, white 1px, transparent 0)', backgroundSize: '24px 24px' }} />

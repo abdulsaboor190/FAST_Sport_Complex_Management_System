@@ -1,3 +1,4 @@
+import { resolveImageUrl } from '@/config';
 import { motion } from 'framer-motion';
 import { Link, useNavigate } from 'react-router-dom';
 import { Calendar, Trophy, ChevronDown, Clock4, Shield, Zap, Target } from 'lucide-react';
@@ -205,7 +206,7 @@ export function Landing() {
                        <div className="absolute inset-0 bg-gradient-to-t from-[#0d0814] via-transparent to-transparent opacity-80" />
                        <div className="relative h-2/3 p-10 flex items-center justify-center">
                           {f.imageUrl ? (
-                             <img src={f.imageUrl} className="max-h-full max-w-full object-contain drop-shadow-2xl transition-transform duration-700 group-hover:scale-110 group-hover:rotate-3" />
+                             <img src={resolveImageUrl(f.imageUrl)} className="max-h-full max-w-full object-contain drop-shadow-2xl transition-transform duration-700 group-hover:scale-110 group-hover:rotate-3" />
                           ) : (
                              <Shield className="h-32 w-32 text-fast-primary/20" />
                           )}
@@ -248,7 +249,7 @@ export function Landing() {
                     >
                        <div className="relative aspect-square rounded-[32px] overflow-hidden bg-white/5 flex items-center justify-center group-hover:scale-[1.02] transition-transform">
                           {t.posterUrl ? (
-                             <img src={t.posterUrl} className="h-full w-full object-cover transition-transform duration-1000 group-hover:scale-110" />
+                             <img src={resolveImageUrl(t.posterUrl)} className="h-full w-full object-cover transition-transform duration-1000 group-hover:scale-110" />
                           ) : (
                              <Trophy className="h-24 w-24 text-fast-accent/20" />
                           )}

@@ -1,3 +1,4 @@
+import { API_BASE_URL } from '../../config';
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 import type { RootState } from '../index';
 import type { Tournament } from './tournamentApi';
@@ -39,7 +40,7 @@ export interface RegisterTeamRequest {
 export const teamApi = createApi({
     reducerPath: 'teamApi',
     baseQuery: fetchBaseQuery({
-        baseUrl: '/api/teams',
+        baseUrl: API_BASE_URL + '/teams',
         prepareHeaders: (headers, { getState }) => {
             const token = (getState() as RootState).auth.accessToken;
             if (token) {

@@ -1,3 +1,4 @@
+import { resolveImageUrl } from '@/config';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Users, Star, ChevronRight } from 'lucide-react';
@@ -27,7 +28,7 @@ function CoachCard({ coach }: { coach: CoachListItem }) {
               <div className="relative">
                 <div className="absolute -inset-1 rounded-full bg-gradient-to-tr from-fast-primary to-fast-accent opacity-20 blur group-hover:opacity-40 transition-opacity" />
                 <Avatar className="h-32 w-32 border-4 border-white/10 shadow-2xl relative">
-                  <AvatarImage src={coach.user.avatarUrl ?? undefined} alt={coach.user.name} className="object-cover" />
+                  <AvatarImage src={resolveImageUrl(coach.user.avatarUrl ?? undefined)} alt={coach.user.name} className="object-cover" />
                   <AvatarFallback className="bg-gradient-to-br from-fast-primary to-fast-accent text-3xl font-black text-white">
                     {coach.user.name.slice(0, 2).toUpperCase()}
                   </AvatarFallback>

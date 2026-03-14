@@ -1,3 +1,4 @@
+import { resolveImageUrl } from '@/config';
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { format } from 'date-fns';
@@ -156,7 +157,7 @@ function SessionCard({
       <CardContent className="flex flex-wrap items-center justify-between gap-4 py-4">
         <div className="flex items-center gap-4">
           <Avatar className="h-12 w-12">
-            <AvatarImage src={session.coach?.user?.avatarUrl ?? undefined} />
+            <AvatarImage src={resolveImageUrl(session.coach?.user?.avatarUrl ?? undefined)} />
             <AvatarFallback>{session.coach?.user?.name?.slice(0, 2).toUpperCase() ?? 'C'}</AvatarFallback>
           </Avatar>
           <div>

@@ -1,3 +1,4 @@
+import { resolveImageUrl } from '@/config';
 import { useParams, Link, useLocation, useNavigate } from 'react-router-dom';
 import { format, isAfter } from 'date-fns';
 import { useGetEventQuery, useRegisterForEventMutation, useUnregisterFromEventMutation, useGetEventRegistrationsQuery, useGetMyRegistrationsQuery } from '@/store/api/eventsApi';
@@ -106,7 +107,7 @@ export function EventDetail() {
           >
             {event.bannerUrl ? (
               <div className="relative aspect-video w-full overflow-hidden">
-                <img src={event.bannerUrl} alt="" className="h-full w-full object-cover transition-transform duration-1000 group-hover:scale-105" />
+                <img src={resolveImageUrl(event.bannerUrl)} alt="" className="h-full w-full object-cover transition-transform duration-1000 group-hover:scale-105" />
                 <div className="absolute inset-0 bg-gradient-to-t from-[#0d0814] via-transparent to-transparent opacity-60" />
               </div>
             ) : (

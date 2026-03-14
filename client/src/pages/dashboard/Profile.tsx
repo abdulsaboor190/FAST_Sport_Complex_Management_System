@@ -1,3 +1,4 @@
+import { resolveImageUrl } from '@/config';
 import { useRef } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -142,7 +143,7 @@ export function Profile() {
                 />
                 <div className="group relative h-full w-full cursor-pointer" onClick={() => fileInputRef.current?.click()}>
                    <Avatar className="h-full w-full border-4 border-white/5 shadow-2xl">
-                    <AvatarImage src={profile.avatarUrl ?? undefined} alt={profile.name} className="object-cover" />
+                    <AvatarImage src={resolveImageUrl(profile.avatarUrl ?? undefined)} alt={profile.name} className="object-cover" />
                     <AvatarFallback className="bg-gradient-to-br from-fast-primary to-fast-accent text-4xl font-black text-white">
                       {profile.name.slice(0, 2).toUpperCase()}
                     </AvatarFallback>

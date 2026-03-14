@@ -1,3 +1,4 @@
+import { resolveImageUrl } from '@/config';
 import { useState } from 'react';
 import { Link, NavLink, Outlet, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -126,7 +127,7 @@ export function DashboardLayout() {
           <div className="mb-6 flex items-center gap-4">
             <div className="relative">
               <Avatar className="h-11 w-11 border-2 border-fast-primary/20 shadow-xl">
-                <AvatarImage src={user?.avatarUrl ?? undefined} alt={user?.name} />
+                <AvatarImage src={resolveImageUrl(user?.avatarUrl ?? undefined)} alt={user?.name} />
                 <AvatarFallback className="bg-gradient-to-br from-fast-primary/40 to-fast-accent/40 text-sm font-black text-white">
                   {user?.name?.slice(0, 2).toUpperCase() ?? 'U'}
                 </AvatarFallback>
@@ -241,7 +242,7 @@ export function DashboardLayout() {
               className="group flex items-center gap-3 rounded-2xl bg-white/[0.03] p-1.5 pr-4 border border-white/5 transition-all hover:bg-white/10 active:scale-95"
             >
               <Avatar className="h-8 w-8 border border-fast-primary/20">
-                <AvatarImage src={user?.avatarUrl ?? undefined} alt={user?.name} />
+                <AvatarImage src={resolveImageUrl(user?.avatarUrl ?? undefined)} alt={user?.name} />
                 <AvatarFallback className="bg-fast-primary/20 text-[10px] font-black">{user?.name?.slice(0, 2).toUpperCase() ?? 'U'}</AvatarFallback>
               </Avatar>
               <div className="text-left">

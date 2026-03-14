@@ -1,3 +1,4 @@
+import { API_BASE_URL } from '../../config';
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 
 export type CoachSessionType = 'Individual' | 'Group' | 'Team';
@@ -56,7 +57,7 @@ export interface SlotsResponse {
 }
 
 const baseQuery = fetchBaseQuery({
-  baseUrl: '/api',
+  baseUrl: API_BASE_URL,
   credentials: 'include',
   prepareHeaders: (headers, { getState }) => {
     const token = (getState() as { auth: { accessToken: string | null } }).auth.accessToken;

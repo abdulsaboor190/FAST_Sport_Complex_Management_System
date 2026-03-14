@@ -1,3 +1,4 @@
+import { resolveImageUrl } from '@/config';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { Calendar, Users } from 'lucide-react';
@@ -45,7 +46,7 @@ export function Facilities() {
                   <div className="relative h-64 bg-[rgba(255,255,255,0.02)] p-8 flex items-center justify-center border-b border-white/5 overflow-hidden">
                     {f.imageUrl ? (
                       <img
-                        src={f.imageUrl}
+                        src={resolveImageUrl(f.imageUrl)}
                         alt={f.name}
                         className="h-full w-full object-contain drop-shadow-[0_20px_40px_rgba(0,0,0,0.6)] transition-transform duration-700 group-hover:scale-110"
                       />
