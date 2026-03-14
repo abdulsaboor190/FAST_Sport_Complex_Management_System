@@ -11,7 +11,9 @@
     "build:client": "cd client && npm run build",
     "db:generate": "cd server && npx prisma generate",
     "db:push": "cd server && npx prisma db push",
-    "db:studio": "cd server && npx prisma studio"
+    "db:studio": "cd server && npx prisma studio",
+    "start": "cd server && npm start",
+    "postinstall": "npm run db:generate"
   },
   "devDependencies": {
     "concurrently": "^8.2.2"
