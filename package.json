@@ -11,7 +11,7 @@
     "db:generate": "npx prisma generate --schema=server/prisma/schema.prisma",
     "db:push": "npx prisma db push --schema=server/prisma/schema.prisma",
     "db:seed": "npm run db:seed -w server",
-    "postinstall": "prisma generate --schema=server/prisma/schema.prisma || true"
+    "postinstall": "npx prisma generate --schema=server/prisma/schema.prisma || echo 'Prisma generation skipped'"
   },
   "devDependencies": {
     "concurrently": "^8.2.2",
