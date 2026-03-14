@@ -1,0 +1,139 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* Velvet Court palette */
+    --background: 288 27% 6%;
+    /* #0d0814 base */
+    --foreground: 266 56% 93%;
+    /* #f0e8ff text */
+    --card: 274 46% 9%;
+    /* #120a1e surface */
+    --card-foreground: 266 56% 93%;
+    --primary: 276 83% 64%;
+    /* #a855f7 violet */
+    --primary-foreground: 288 27% 6%;
+    --secondary: 334 82% 67%;
+    /* #ec4899 rose */
+    --secondary-foreground: 266 56% 93%;
+    --muted: 275 47% 13%;
+    /* #1a0d2e elevated */
+    --muted-foreground: 267 20% 52%;
+    /* #7a6a9a */
+    --accent: 276 83% 64%;
+    /* match primary for subtle accents */
+    --accent-foreground: 266 56% 93%;
+    --destructive: 0 84% 60%;
+    --border: 276 83% 55%;
+    /* hsl for rgba(168,85,247,*) */
+    --input: 276 83% 16%;
+    --ring: 276 83% 64%;
+    --radius: 0.5rem;
+  }
+
+  .dark {
+    --background: 288 27% 4%;
+    --foreground: 266 56% 93%;
+    --card: 274 46% 9%;
+    --card-foreground: 266 56% 93%;
+    --primary: 276 83% 64%;
+    --primary-foreground: 288 27% 6%;
+    --secondary: 334 82% 67%;
+    --secondary-foreground: 266 56% 93%;
+    --muted: 275 47% 13%;
+    --muted-foreground: 267 20% 52%;
+    --accent: 276 83% 64%;
+    --accent-foreground: 266 56% 93%;
+    --destructive: 0 62% 50%;
+    --border: 276 83% 55%;
+    --input: 276 83% 16%;
+    --ring: 276 83% 64%;
+  }
+
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground antialiased;
+    font-family: 'DM Sans', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  }
+}
+
+/* Athletic display font for large headings */
+.font-display {
+  font-family: 'Bebas Neue', system-ui, sans-serif;
+  letter-spacing: 0.08em;
+}
+
+/* Form elements – Velvet Court inputs */
+@layer base {
+
+  input,
+  textarea,
+  select {
+    @apply bg-transparent text-foreground;
+    background-color: rgba(255, 255, 255, 0.04);
+    border-radius: 12px;
+    border: 1px solid rgba(168, 85, 247, 0.15);
+    padding: 0.5rem 0.75rem;
+    color: #f0e8ff;
+  }
+
+  input::placeholder,
+  textarea::placeholder {
+    color: #7a6a9a;
+  }
+
+  input:focus,
+  textarea:focus,
+  select:focus {
+    outline: none;
+    border-color: rgba(168, 85, 247, 0.4);
+    box-shadow: 0 0 0 1px rgba(168, 85, 247, 0.3);
+  }
+}
+
+/* Premium Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(13, 8, 20, 0.4);
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, rgba(168, 85, 247, 0.2), rgba(236, 72, 153, 0.2));
+  border-radius: 10px;
+  border: 2px solid rgba(13, 8, 20, 1);
+  transition: all 0.3s ease;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, rgba(168, 85, 247, 0.4), rgba(236, 72, 153, 0.4));
+}
+
+/* Custom Scrollbar Utility for overflow containers */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(168, 85, 247, 0.2);
+  border-radius: 20px;
+  border: none;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: rgba(168, 85, 247, 0.4);
+}

@@ -1,0 +1,669 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  Student
+  Faculty
+  Coach
+  Admin
+}
+
+model User {
+  id            String    @id @default(cuid())
+  fastId        String    @unique // 23I-XXXX format
+  email         String    @unique
+  passwordHash  String    @map("password_hash")
+  name          String
+  role          Role      @default(Student)
+  avatarUrl     String?   @map("avatar_url")
+  emailVerified Boolean   @default(false) @map("email_verified")
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
+
+  refreshTokens RefreshToken[]
+  passwordResetTokens PasswordResetToken[]
+  bookings Booking[]
+  tournamentsCreated Tournament[] @relation("TournamentCreatedBy")
+  coachedTeams Team[] @relation("TeamCoach")
+  submittedMatches Match[] @relation("MatchSubmittedBy")
+  verifiedMatches Match[] @relation("MatchVerifiedBy")
+  matchEventsCreated MatchEvent[] @relation("MatchEventCreatedBy")
+  equipmentTransactions EquipmentTransaction[]
+  heldEquipment        EquipmentItem[]     @relation("EquipmentHolder")
+  coachProfile         CoachProfile?
+  coachSessionsAsStudent CoachSession[]    @relation("CoachSessionsStudent")
+  coachReviewsWritten  CoachReview[]
+  eventRegistrations   EventRegistration[]
+  eventCheckIns        EventCheckIn[]
+  eventFeedback        EventFeedback[]
+  issuesReported       Issue[]                  @relation("IssueReporter")
+  issuesAssigned       Issue[]                  @relation("IssueAssignee")
+  issueActivities      IssueActivity[]
+  issueComments        IssueComment[]
+
+  @@map("users")
+}
+
+// —— Phase 7: Issues & Maintenance ———
+
+enum IssueCategory {
+  Facility
+  Equipment
+  Booking
+  Safety
+  Other
+}
+
+enum IssueStatus {
+  Open
+  Acknowledged
+  InProgress
+  Resolved
+  Closed
+}
+
+enum IssuePriority {
+  Low
+  Medium
+  High
+  Urgent
+}
+
+model Issue {
+  id            String        @id @default(cuid())
+  reporterId    String        @map("reporter_id")
+  reporter      User          @relation("IssueReporter", fields: [reporterId], references: [id], onDelete: Cascade)
+  assigneeId    String?       @map("assignee_id")
+  assignee      User?         @relation("IssueAssignee", fields: [assigneeId], references: [id], onDelete: SetNull)
+  category      IssueCategory
+  facilityId    String?       @map("facility_id")
+  facility      Facility?     @relation(fields: [facilityId], references: [id], onDelete: SetNull)
+  equipmentId   String?       @map("equipment_id")
+  equipment     EquipmentItem? @relation(fields: [equipmentId], references: [id], onDelete: SetNull)
+  bookingId     String?       @map("booking_id")
+  booking       Booking?      @relation(fields: [bookingId], references: [id], onDelete: SetNull)
+  title         String
+  description   String?
+  priority      IssuePriority @default(Medium)
+  status        IssueStatus   @default(Open)
+  location      String?
+  attachments   Json?         // array of URLs
+  resolution    String?
+  satisfactionRating Int?     @map("satisfaction_rating") // 1-5
+  createdAt     DateTime      @default(now()) @map("created_at")
+  updatedAt     DateTime      @updatedAt @map("updated_at")
+
+  activities    IssueActivity[]
+  comments      IssueComment[]
+
+  @@map("issues")
+}
+
+model IssueActivity {
+  id        String      @id @default(cuid())
+  issueId   String      @map("issue_id")
+  issue     Issue       @relation(fields: [issueId], references: [id], onDelete: Cascade)
+  actorId   String?     @map("actor_id")
+  actor     User?       @relation(fields: [actorId], references: [id], onDelete: SetNull)
+  type      String
+  payload   Json?
+  createdAt DateTime    @default(now()) @map("created_at")
+
+  @@map("issue_activities")
+}
+
+model IssueComment {
+  id        String   @id @default(cuid())
+  issueId   String   @map("issue_id")
+  issue     Issue    @relation(fields: [issueId], references: [id], onDelete: Cascade)
+  authorId  String   @map("author_id")
+  author    User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  message   String
+  internal  Boolean  @default(false)
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@map("issue_comments")
+}
+
+// —— Phase 5: Coach & Sessions ———
+model CoachProfile {
+  id             String   @id @default(cuid())
+  userId         String   @unique @map("user_id")
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  bio            String?
+  specializations Json?   // e.g. ["Football", "Cricket", "Fitness"]
+  qualifications String?
+  experience     String?
+  achievements   String?
+  hourlyRate     Decimal  @default(0) @map("hourly_rate")
+  isActive       Boolean  @default(true) @map("is_active")
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+
+  availability CoachAvailability[]
+  sessions     CoachSession[] @relation("CoachSessions")
+  @@map("coach_profiles")
+}
+
+enum CoachAvailabilityType {
+  Available
+  Break
+}
+
+model CoachAvailability {
+  id        String                @id @default(cuid())
+  coachId   String                @map("coach_id")
+  coach     CoachProfile          @relation(fields: [coachId], references: [id], onDelete: Cascade)
+  dayOfWeek Int                   @map("day_of_week") // 0 = Sunday, 6 = Saturday
+  startTime String                @map("start_time")  // "09:00"
+  endTime   String                @map("end_time")   // "17:00"
+  type      CoachAvailabilityType  @default(Available)
+  createdAt DateTime              @default(now()) @map("created_at")
+  updatedAt DateTime              @updatedAt @map("updated_at")
+
+  @@map("coach_availability")
+}
+
+enum CoachSessionType {
+  Individual
+  Group
+  Team
+}
+
+enum CoachSessionStatus {
+  Scheduled
+  Completed
+  Cancelled
+  NoShow
+}
+
+model CoachSession {
+  id                 String            @id @default(cuid())
+  coachId            String            @map("coach_id")
+  coach              CoachProfile      @relation("CoachSessions", fields: [coachId], references: [id], onDelete: Cascade)
+  studentId          String            @map("student_id")
+  student            User              @relation("CoachSessionsStudent", fields: [studentId], references: [id], onDelete: Cascade)
+  startTime          DateTime          @map("start_time")
+  endTime            DateTime          @map("end_time")
+  sessionType        CoachSessionType  @map("session_type")
+  status             CoachSessionStatus @default(Scheduled)
+  specialRequirements String?          @map("special_requirements")
+  amount             Decimal           @map("amount")
+  meetingLink        String?           @map("meeting_link")
+  createdAt          DateTime          @default(now()) @map("created_at")
+  updatedAt          DateTime          @updatedAt @map("updated_at")
+
+  review CoachReview?
+  @@map("coach_sessions")
+}
+
+model CoachReview {
+  id        String       @id @default(cuid())
+  sessionId String       @unique @map("session_id")
+  session   CoachSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  userId    String       @map("user_id")
+  user      User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  rating    Int          // 1-5
+  review    String?
+  createdAt DateTime     @default(now()) @map("created_at")
+
+  @@map("coach_reviews")
+}
+
+// —— Phase 5: Events ———
+enum EventType {
+  Workshop
+  Seminar
+  SportsDay
+  FitnessChallenge
+}
+
+enum EventStatus {
+  Draft
+  Published
+  Completed
+  Cancelled
+}
+
+model Event {
+  id                   String      @id @default(cuid())
+  type                 EventType
+  title                String
+  description          String?
+  bannerUrl            String?     @map("banner_url")
+  startTime            DateTime    @map("start_time")
+  endTime              DateTime    @map("end_time")
+  venue                String?
+  registrationRequired Boolean     @default(true) @map("registration_required")
+  capacity             Int?        @map("capacity")
+  entryFee             Decimal     @default(0) @map("entry_fee")
+  agenda               Json?       // [{ time, title, description }]
+  speakers             Json?      // [{ name, role, bio }]
+  status               EventStatus @default(Draft)
+  createdById          String?     @map("created_by_id")
+  createdAt            DateTime    @default(now()) @map("created_at")
+  updatedAt            DateTime    @updatedAt @map("updated_at")
+
+  registrations EventRegistration[]
+  checkIns      EventCheckIn[]
+  feedback      EventFeedback[]
+  @@map("events")
+}
+
+model EventRegistration {
+  id           String   @id @default(cuid())
+  eventId      String   @map("event_id")
+  event        Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  userId       String   @map("user_id")
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  status       String   @default("Registered") // Registered, Cancelled
+  paymentRef   String?  @map("payment_ref")
+  amount       Decimal? @map("amount")
+  registeredAt DateTime @default(now()) @map("registered_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  @@unique([eventId, userId])
+  @@map("event_registrations")
+}
+
+model EventCheckIn {
+  id          String   @id @default(cuid())
+  eventId     String   @map("event_id")
+  event       Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  userId      String   @map("user_id")
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  checkedInAt DateTime @default(now()) @map("checked_in_at")
+
+  @@unique([eventId, userId])
+  @@map("event_check_ins")
+}
+
+model EventFeedback {
+  id        String   @id @default(cuid())
+  eventId   String   @map("event_id")
+  event     Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  userId    String   @map("user_id")
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  rating    Int?     // 1-5
+  feedback  String?
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@unique([eventId, userId])
+  @@map("event_feedback")
+}
+
+enum EquipmentStatus {
+  Available
+  CheckedOut
+  UnderMaintenance
+}
+
+enum EquipmentCondition {
+  Excellent
+  Good
+  Fair
+  Poor
+}
+
+enum EquipmentTransactionType {
+  CheckOut
+  CheckIn
+  Reservation
+}
+
+enum MaintenanceTaskStatus {
+  Planned
+  InProgress
+  Completed
+  Cancelled
+}
+
+enum MaintenanceTaskType {
+  RoutineInspection
+  Repair
+  DeepCleaning
+  Replacement
+}
+
+model EquipmentCategory {
+  id          String   @id @default(cuid())
+  name        String
+  code        String   @unique
+  description String?
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+  items       EquipmentItem[]
+
+  @@map("equipment_categories")
+}
+
+model EquipmentItem {
+  id              String            @id @default(cuid())
+  categoryId      String            @map("category_id")
+  category        EquipmentCategory @relation(fields: [categoryId], references: [id], onDelete: Restrict)
+  name            String
+  sportType       String?           @map("sport_type")
+  brand           String?
+  specifications  Json?             @map("specifications")
+  photos          Json?             // array of URLs
+  purchaseDate    DateTime?        @map("purchase_date")
+  warrantyUntil   DateTime?         @map("warranty_until")
+  status          EquipmentStatus   @default(Available)
+  condition       EquipmentCondition @default(Good)
+  qrCode          String            @unique @map("qr_code")
+  currentHolderId String?           @map("current_holder_id")
+  currentHolder   User?             @relation("EquipmentHolder", fields: [currentHolderId], references: [id], onDelete: SetNull)
+  lowStockThreshold Int?            @map("low_stock_threshold")
+  quantity        Int               @default(1) @map("quantity")
+  createdAt       DateTime          @default(now()) @map("created_at")
+  updatedAt       DateTime          @updatedAt @map("updated_at")
+
+  transactions    EquipmentTransaction[]
+  maintenanceTasks EquipmentMaintenanceTask[]
+  issues          Issue[]
+
+  @@map("equipment_items")
+}
+
+model EquipmentTransaction {
+  id               String                  @id @default(cuid())
+  equipmentId      String                  @map("equipment_id")
+  equipment        EquipmentItem           @relation(fields: [equipmentId], references: [id], onDelete: Cascade)
+  userId           String                  @map("user_id")
+  user             User                    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type             EquipmentTransactionType
+  plannedReturnAt  DateTime?               @map("planned_return_at")
+  returnedAt      DateTime?               @map("returned_at")
+  damageReported  String?                  @map("damage_reported")
+  notes            String?
+  lateFee          Decimal?                @map("late_fee")
+  damageFee        Decimal?                @map("damage_fee")
+  conditionOnReturn EquipmentCondition?   @map("condition_on_return")
+  createdAt        DateTime                @default(now()) @map("created_at")
+  updatedAt        DateTime                @updatedAt @map("updated_at")
+
+  @@map("equipment_transactions")
+}
+
+model EquipmentMaintenanceTask {
+  id           String                @id @default(cuid())
+  equipmentId  String                @map("equipment_id")
+  equipment    EquipmentItem         @relation(fields: [equipmentId], references: [id], onDelete: Cascade)
+  type         MaintenanceTaskType
+  status       MaintenanceTaskStatus @default(Planned)
+  scheduledFor DateTime              @map("scheduled_for")
+  completedAt  DateTime?              @map("completed_at")
+  assignedTo  String?                @map("assigned_to")
+  checklist    Json?
+  cost         Decimal?
+  invoiceUrl   String?                @map("invoice_url")
+  notes        String?
+  createdAt    DateTime              @default(now()) @map("created_at")
+  updatedAt    DateTime              @updatedAt @map("updated_at")
+
+  @@map("equipment_maintenance_tasks")
+}
+
+enum BookingStatus {
+  Confirmed
+  Pending
+  Cancelled
+}
+
+enum RefundStatus {
+  None
+  Pending
+  Approved
+  Processed
+}
+
+enum TournamentFormat {
+  SingleElimination
+  DoubleElimination
+  RoundRobin
+  GroupStage
+}
+
+enum TournamentStatus {
+  Draft
+  RegistrationOpen
+  RegistrationClosed
+  Scheduled
+  Live
+  Completed
+  Cancelled
+}
+
+enum RegistrationStatus {
+  Pending
+  Approved
+  Rejected
+}
+
+enum MatchStatus {
+  Upcoming
+  Live
+  Completed
+  Cancelled
+}
+
+enum VerificationStatus {
+  NotSubmitted
+  Pending
+  Verified
+  Disputed
+}
+
+model Facility {
+  id                  String   @id @default(cuid())
+  name                String
+  slug                String   @unique
+  category            String
+  description         String?
+  capacity            Int      @default(10)
+  imageUrl            String?  @map("image_url")
+  rules               String?
+  equipmentInfo       String?  @map("equipment_info")
+  slotDurationMinutes Int      @default(30) @map("slot_duration_minutes")
+  minBookingSlots     Int      @default(1) @map("min_booking_slots")
+  maxBookingSlots     Int      @default(4) @map("max_booking_slots")
+  peakStartTime       String?  @map("peak_start_time")
+  peakEndTime         String?  @map("peak_end_time")
+  pricePerSlotOffPeak Decimal  @default(0) @map("price_per_slot_off_peak")
+  pricePerSlotPeak    Decimal  @default(0) @map("price_per_slot_peak")
+  isActive            Boolean  @default(true) @map("is_active")
+  createdAt           DateTime @default(now()) @map("created_at")
+  updatedAt           DateTime @updatedAt @map("updated_at")
+  bookings            Booking[]
+  matches             Match[]
+  issues              Issue[]
+  @@map("facilities")
+}
+
+model Booking {
+  id                   String        @id @default(cuid())
+  facilityId           String        @map("facility_id")
+  facility             Facility      @relation(fields: [facilityId], references: [id], onDelete: Restrict)
+  userId               String        @map("user_id")
+  user                 User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  startTime            DateTime      @map("start_time")
+  endTime              DateTime      @map("end_time")
+  status               BookingStatus @default(Confirmed)
+  purpose              String?
+  participantCount    Int?          @map("participant_count")
+  specialRequirements String?       @map("special_requirements")
+  totalAmount          Decimal      @map("total_amount")
+  cancelledAt         DateTime?     @map("cancelled_at")
+  cancelledById        String?       @map("cancelled_by_id")
+  cancelReason         String?       @map("cancel_reason")
+  refundAmount         Decimal?     @map("refund_amount")
+  refundStatus        RefundStatus? @map("refund_status")
+  createdAt            DateTime      @default(now()) @map("created_at")
+  updatedAt            DateTime      @updatedAt @map("updated_at")
+  issues              Issue[]
+  @@map("bookings")
+}
+
+model Tournament {
+  id                    String           @id @default(cuid())
+  name                  String
+  sport                 String
+  startDate             DateTime         @map("start_date")
+  endDate               DateTime         @map("end_date")
+  format                TournamentFormat @default(SingleElimination)
+  status                TournamentStatus @default(Draft)
+  registrationOpen      Boolean          @default(false) @map("registration_open")
+  registrationDeadline  DateTime?        @map("registration_deadline")
+  maxTeams              Int              @default(16) @map("max_teams")
+  entryFee              Decimal          @default(0) @map("entry_fee")
+  rules                 String?
+  prizes                Json?            // e.g. [{place:1, amount:...}]
+  posterUrl             String?          @map("poster_url")
+  announcement          String?
+  createdById           String           @map("created_by_id")
+  createdBy             User             @relation("TournamentCreatedBy", fields: [createdById], references: [id], onDelete: Restrict)
+  createdAt             DateTime         @default(now()) @map("created_at")
+  updatedAt             DateTime         @updatedAt @map("updated_at")
+
+  registrations         TournamentRegistration[]
+  matches               Match[]
+
+  @@map("tournaments")
+}
+
+model Team {
+  id          String   @id @default(cuid())
+  name        String
+  department  String?
+  coachUserId String?  @map("coach_user_id")
+  coachUser   User?    @relation("TeamCoach", fields: [coachUserId], references: [id], onDelete: SetNull)
+  logoUrl     String?  @map("logo_url")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  players     Player[]
+  registrations TournamentRegistration[]
+  homeMatches Match[] @relation("HomeTeam")
+  awayMatches Match[] @relation("AwayTeam")
+  wonMatches  Match[] @relation("WinnerTeam")
+
+  @@unique([name, department])
+  @@map("teams")
+}
+
+model Player {
+  id        String   @id @default(cuid())
+  teamId    String   @map("team_id")
+  team      Team     @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  name      String
+  fastId    String?  @map("fast_id")
+  position  String?
+  jerseyNo  Int?     @map("jersey_no")
+  stats     Json?    // per sport
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("players")
+}
+
+model TournamentRegistration {
+  id           String             @id @default(cuid())
+  tournamentId String             @map("tournament_id")
+  tournament   Tournament         @relation(fields: [tournamentId], references: [id], onDelete: Cascade)
+  teamId       String             @map("team_id")
+  team         Team               @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  status       RegistrationStatus @default(Pending)
+  seed         Int?
+  paid         Boolean            @default(false)
+  paymentRef   String?            @map("payment_ref")
+  createdAt    DateTime           @default(now()) @map("created_at")
+  updatedAt    DateTime           @updatedAt @map("updated_at")
+
+  @@unique([tournamentId, teamId])
+  @@map("tournament_registrations")
+}
+
+model Match {
+  id                 String             @id @default(cuid())
+  tournamentId       String             @map("tournament_id")
+  tournament         Tournament         @relation(fields: [tournamentId], references: [id], onDelete: Cascade)
+  round              Int
+  matchNumber        Int                @map("match_number")
+  status             MatchStatus        @default(Upcoming)
+  verificationStatus VerificationStatus @default(NotSubmitted) @map("verification_status")
+
+  homeTeamId         String?            @map("home_team_id")
+  homeTeam           Team?              @relation("HomeTeam", fields: [homeTeamId], references: [id], onDelete: SetNull)
+  awayTeamId         String?            @map("away_team_id")
+  awayTeam           Team?              @relation("AwayTeam", fields: [awayTeamId], references: [id], onDelete: SetNull)
+  winnerTeamId       String?            @map("winner_team_id")
+  winnerTeam         Team?              @relation("WinnerTeam", fields: [winnerTeamId], references: [id], onDelete: SetNull)
+
+  scheduledAt        DateTime?          @map("scheduled_at")
+  facilityId         String?            @map("facility_id")
+  facility           Facility?          @relation(fields: [facilityId], references: [id], onDelete: SetNull)
+
+  scoreHome          Int?               @map("score_home")
+  scoreAway          Int?               @map("score_away")
+  sets               Json?              // e.g. [{home:21, away:18}, ...]
+  events             MatchEvent[]
+
+  nextMatchId        String?            @map("next_match_id")
+  nextMatchSlot      String?            @map("next_match_slot") // 'home' | 'away'
+
+  submittedById      String?            @map("submitted_by_id")
+  submittedBy        User?              @relation("MatchSubmittedBy", fields: [submittedById], references: [id], onDelete: SetNull)
+  verifiedById       String?            @map("verified_by_id")
+  verifiedBy         User?              @relation("MatchVerifiedBy", fields: [verifiedById], references: [id], onDelete: SetNull)
+
+  startedAt          DateTime?          @map("started_at")
+  endedAt            DateTime?          @map("ended_at")
+  createdAt          DateTime           @default(now()) @map("created_at")
+  updatedAt          DateTime           @updatedAt @map("updated_at")
+
+  @@unique([tournamentId, round, matchNumber])
+  @@map("matches")
+}
+
+model MatchEvent {
+  id        String   @id @default(cuid())
+  matchId   String   @map("match_id")
+  match     Match    @relation(fields: [matchId], references: [id], onDelete: Cascade)
+  type      String
+  atSeconds Int?     @map("at_seconds")
+  payload   Json?
+  createdById String? @map("created_by_id")
+  createdBy  User?    @relation("MatchEventCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@map("match_events")
+}
+
+model RefreshToken {
+  id        String   @id @default(cuid())
+  token     String   @unique
+  userId    String   @map("user_id")
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expiresAt DateTime @map("expires_at")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@map("refresh_tokens")
+}
+
+model PasswordResetToken {
+  id        String   @id @default(cuid())
+  token     String   @unique
+  userId    String   @map("user_id")
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expiresAt DateTime @map("expires_at")
+  used      Boolean  @default(false)
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@map("password_reset_tokens")
+}
