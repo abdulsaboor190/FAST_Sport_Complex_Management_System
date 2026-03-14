@@ -134,7 +134,9 @@ app.use((err: Error, _req: express.Request, res: express.Response, _next: expres
   res.status(500).json({ message: 'Internal server error' });
 });
 
-server.listen(config.port, () => {
-  console.log(`FSCM API running at http://localhost:${config.port}`);
+server.listen(config.port, '0.0.0.0', () => {
+  console.log(`[SYS] FSCM PROTOCOL ACTIVE`);
+  console.log(`[SYS] SIGNAL EMITTING ON PORT: ${config.port}`);
+  console.log(`[SYS] TARGET CLIENT ORIGIN: ${config.clientUrl}`);
   startReportScheduler();
 });
