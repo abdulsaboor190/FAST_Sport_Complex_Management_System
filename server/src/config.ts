@@ -1,7 +1,7 @@
 import 'dotenv/config';
 
 export const config = {
-  port: parseInt(process.env.PORT ?? '4000', 10),
+  port: parseInt(process.env.PORT ?? '8080', 10),
   db: {
     url: process.env.DATABASE_URL!,
   },
